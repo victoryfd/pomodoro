@@ -1,0 +1,7 @@
+{
+    "coins": 100,
+    "tasks": [],
+    "completed_tasks": [],
+    "unlocks": ["Rabbit"],
+    "current_pet": "Rabbit"
+}
