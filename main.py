@@ -77,7 +77,7 @@ def pomodoro():
     sound.notification_sound()
     print(f'Good job! You earned {earned_coins} coins.')
     coins += earned_coins
-    storage.save_data()
+    save_all()
     print('Break time! Take a moment to reset.')
     timer.break_timer(break_minutes)
     sound.notification_sound()
@@ -99,15 +99,18 @@ def add_task():
         print('Please enter a task.')
         task = input('Enter task to add: ')
     tasks.append(task)
-    storage.save_data()
+    save_all()
     print('Task added.')
     
 def show_task():
+    if not tasks:
+        print("You have no tasks. \n")
+        return
     for i, task in enumerate(tasks):
         print(f'{i+1}. {task}')
 
 #input and index validation everytime I need a task selected in the menus
-def choose_task(prompt): 
+def choose_task(prompt):
     first_time = True #used for a different prompt the first time function runs
     if not tasks:
         print('You have no tasks.')
@@ -134,7 +137,7 @@ def remove_task(): #for removing a task without completing it in the menus
     if choice is None:
         return
     tasks.pop(choice)
-    storage.save_data()
+    save_all()
     print('Task removed.')
 
 def complete_task(): #will only be used after a completed pomodoro cycle to reward coins
@@ -145,7 +148,7 @@ def complete_task(): #will only be used after a completed pomodoro cycle to rewa
     task = tasks.pop(choice)
     completed_tasks.append(task)
     coins += 5
-    storage.save_data()
+    save_all()
     print(f"Task completed: {task}\nGood job! +5 coins\n")
 
     if current_pet:
@@ -229,7 +232,7 @@ def shop_menu(): #also accessed via original menu
                     coins -= 100
                     unlocks.append(pet_name)
                     print(f'You just bought {pet_name}!\n')
-                    storage.save_data()
+                    save_all()
                 else:
                     print("You don't have enough coins.\n")
         elif choice == 5:
@@ -256,11 +259,25 @@ def pets_menu():
 
         if choice >= 1 and choice <= len(unlocks): #switch current pet if index is valid
             current_pet = unlocks[choice - 1]
-            storage.save_data()
+            save_all()
         elif choice == len(unlocks) + 1:
             break
         else:
             print('Invalid choice.\n')
 
-storage.load_data()
+def save_all():
+    storage.save_data({
+        "coins" : coins,
+        "tasks" : tasks,
+        "completed_tasks" : completed_tasks,
+        "unlocks" : unlocks,
+        "current_pet" : current_pet
+    })
+
+state = storage.load_data()
+coins = state["coins"]
+tasks = state["tasks"]
+completed_tasks = state["completed_tasks"]
+unlocks = state["unlocks"]
+current_pet = state["current_pet"]
 menu()
