@@ -1,13 +1,9 @@
-import time
-import json
-import winsound
+from src import timer
+from src import sound
+from src import storage
 
 """ 
-This project is a pomodoro timer combined with a to-do list and game elements. As someone who was a heavy gamer in the past, trying to 
-transition out of that habit is hard, and I wanted to build something that would help scratch that gaming itch of progression and reward.
-My ultimate goal with this was to make a foundation for a future project I've been thinking about ever since I started programming. 
-I want to be able to take this and eventually flesh it out with graphics and more content to make a complete game as my programming skills
-develop.
+Pomodoro + to do list management + coins + pet store. CLI app
 """
 
 #------------------------------------------------------------
@@ -43,38 +39,6 @@ pet_ascii = {
              "(\")_(\")\n" ),
 }
 #------------------------------------------------------------
-
-def display_time(hours, minutes, seconds):
-    if hours > 0: #if time is >1 hour, show hours, minutes and seconds
-        print(f'{hours}:{minutes:02d}:{seconds:02d}', end="\r")
-    else: #if time is < 1 hour, only show minutes and seconds
-        print(f'{minutes:02d}:{seconds:02d}  ', end="\r")
-
-#runs a timer and returns minutes that the user focused for
-def countdown(hours, minutes): 
-    total_time = hours * 3600 + minutes * 60
-    ini_total_time = hours * 60 + minutes #for collecting score/coins at the end, 1 coin/minute 
-    while total_time > 0:
-        display_hours = total_time // 3600
-        display_minutes = total_time % 3600 // 60
-        display_seconds = total_time % 60
-        display_time(display_hours, display_minutes, display_seconds)
-        time.sleep(1) #makes timer wait 1 second so it doesn't loop through instantly
-        total_time -= 1
-    return ini_total_time
-
-#break timer similar to countdown but doesn't need a return value as no coins earned
-def break_timer(break_minutes): 
-    total_time =  break_minutes * 60
-    while total_time > 0:
-        display_minutes = total_time // 60
-        display_seconds = total_time % 60
-        display_time(0, display_minutes, display_seconds)
-        time.sleep(1)
-        total_time -= 1
-
-def notification_sound():
-    winsound.PlaySound("alert.wav", winsound.SND_FILENAME)
  
 def pomodoro():
     global coins
@@ -109,14 +73,14 @@ def pomodoro():
     if current_pet: 
         print(pet_ascii[current_pet])
 
-    earned_coins = countdown(hours, minutes)
-    notification_sound()
+    earned_coins = timer.countdown(hours, minutes)
+    sound.notification_sound()
     print(f'Good job! You earned {earned_coins} coins.')
     coins += earned_coins
-    save_data()
+    storage.save_data()
     print('Break time! Take a moment to reset.')
-    break_timer(break_minutes)
-    notification_sound()
+    timer.break_timer(break_minutes)
+    sound.notification_sound()
     while True: #after time and break,
         task_completion = input('Did you complete any tasks? (y/n)\n')
         if task_completion.lower() == 'y':
@@ -135,7 +99,7 @@ def add_task():
         print('Please enter a task.')
         task = input('Enter task to add: ')
     tasks.append(task)
-    save_data()
+    storage.save_data()
     print('Task added.')
     
 def show_task():
@@ -170,7 +134,7 @@ def remove_task(): #for removing a task without completing it in the menus
     if choice is None:
         return
     tasks.pop(choice)
-    save_data()
+    storage.save_data()
     print('Task removed.')
 
 def complete_task(): #will only be used after a completed pomodoro cycle to reward coins
@@ -181,7 +145,7 @@ def complete_task(): #will only be used after a completed pomodoro cycle to rewa
     task = tasks.pop(choice)
     completed_tasks.append(task)
     coins += 5
-    save_data()
+    storage.save_data()
     print(f"Task completed: {task}\nGood job! +5 coins\n")
 
     if current_pet:
@@ -265,7 +229,7 @@ def shop_menu(): #also accessed via original menu
                     coins -= 100
                     unlocks.append(pet_name)
                     print(f'You just bought {pet_name}!\n')
-                    save_data()
+                    storage.save_data()
                 else:
                     print("You don't have enough coins.\n")
         elif choice == 5:
@@ -292,30 +256,11 @@ def pets_menu():
 
         if choice >= 1 and choice <= len(unlocks): #switch current pet if index is valid
             current_pet = unlocks[choice - 1]
-            save_data()
+            storage.save_data()
         elif choice == len(unlocks) + 1:
             break
         else:
             print('Invalid choice.\n')
-        
-def load_data(): #using try/except, function will continue even if no input file is found
-    global coins, tasks, completed_tasks, unlocks, current_pet
-    try:
-        with open("save_data.json", "r") as f:
-            data = json.load(f)
-            coins = data["coins"]
-            tasks = data["tasks"]
-            completed_tasks = data["completed_tasks"]
-            unlocks = data["unlocks"]
-            current_pet = data["current_pet"]
-    except FileNotFoundError:
-        pass
 
-def save_data(): #output file will be created when saving, and can be used as input later
-    global coins, tasks, completed_tasks, unlocks, current_pet
-    with open("save_data.json", "w") as f:
-        data = {"coins" : coins ,"tasks" : tasks, "completed_tasks" : completed_tasks, "unlocks" : unlocks, "current_pet" : current_pet}
-        json.dump(data, f, indent=4)
-
-load_data()
+storage.load_data()
 menu()
