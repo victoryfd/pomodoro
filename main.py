@@ -1,6 +1,7 @@
 from src import timer
 from src import sound
 from src import storage
+from src import pets
 
 """ 
 Pomodoro + to do list management + coins + pet store. CLI app
@@ -15,31 +16,7 @@ unlocks = []
 coins = 0
 current_pet = None
 
-pets = {
-    1: 'Cat',
-    2: 'Chick',
-    3: 'Robot',
-    4: 'Rabbit'
-}
-#------------------------------------------------------------
-#ASCII art
-#------------------------------------------------------------
-pet_ascii = {
-    "Cat" : (" /\\_/\\\n"
-             "( o.o )\n"
-             " > ^ <\n"),
-    "Chick" : ("  (•ө•)\n"
-               " (  .  )\n"
-               "  ^^ ^^\n"),
-    "Robot" : (" [• •]\n"
-               "(  _  )\n"
-               "  |_|\n"),
-    "Rabbit" : (" (\\__/)\n"
-             "(='.'=)\n"
-             "(\")_(\")\n" ),
-}
-#------------------------------------------------------------
- 
+
 def pomodoro():
     global coins
     while True: #input validation loop before running the timer and break functions to ensure integer values are passed
@@ -71,7 +48,7 @@ def pomodoro():
     print('Starting session. Good luck!')
     #show pet if unlocked
     if current_pet: 
-        print(pet_ascii[current_pet])
+        print(pets.pet_ascii[current_pet])
 
     earned_coins = timer.countdown(hours, minutes)
     sound.notification_sound()
@@ -153,7 +130,7 @@ def complete_task(): #will only be used after a completed pomodoro cycle to rewa
 
     if current_pet:
         print('Your pet is proud of you!\n')
-        print(pet_ascii[current_pet])
+        print(pets.pet_ascii[current_pet])
 
 def get_int(prompt): #input validation for menu number options
     while True:
@@ -170,7 +147,7 @@ def menu():
         print(f'You have {coins} coins')
 
         if current_pet:
-            print(pet_ascii[current_pet])
+            print(pets.pet_ascii[current_pet])
 
         print('1. Start pomodoro timer')
         print('2. Tasks')
@@ -207,8 +184,11 @@ def tasks_menu(): #second layer of menu accessed via original menu
         elif choice == 3:
             remove_task()
         elif choice == 4:
-            for i, t in enumerate(completed_tasks):
-                print(f'{i+1}. {t}')
+            if not completed_tasks:
+                print("No completed tasks yet. \n")
+            else: 
+                for i, t in enumerate(completed_tasks):
+                    print(f'{i+1}. {t}')
         elif choice == 5:
             break
 
@@ -224,7 +204,7 @@ def shop_menu(): #also accessed via original menu
         choice = get_int("Please select the item you'd like to buy:\n")
 
         if choice in [1, 2, 3, 4]: #if a valid pet choice, will check if enough coins
-            pet_name = pets[choice]
+            pet_name = pets.pets[choice]
             if pet_name in unlocks: #prevents buyingn pet if already owned
                 print('You already own this pet.\n')
             else:
@@ -247,12 +227,12 @@ def pets_menu():
         return
     while True:
         if current_pet is not None:
-            print(f'Current pet: \n{pet_ascii[current_pet]}')
+            print(f'Current pet: \n{pets.pet_ascii[current_pet]}')
         else:
             print("Current pet: None\n")
 
         for i, p in enumerate(unlocks): #prints every pet unlocked so far, along with the ASCII art
-            print(f'{i+1}. {p}\n{pet_ascii[p]}\n')
+            print(f'{i+1}. {p}\n{pets.pet_ascii[p]}\n')
         print(f'{len(unlocks)+1}. Back to main menu')
 
         choice = get_int('Which pet would you like to switch to?\n')
