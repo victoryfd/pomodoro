@@ -1,10 +1,9 @@
 from src import timer
 from src import sound
 from src import storage
-from src import pets
 
 """ 
-Pomodoro + to do list management + coins + pet store. CLI app
+Pomodoro + to do list management + stats + achievements. CLI app
 """
 
 #------------------------------------------------------------
@@ -12,13 +11,13 @@ Pomodoro + to do list management + coins + pet store. CLI app
 #------------------------------------------------------------
 tasks = []
 completed_tasks = []
-unlocks = []
-coins = 0
-current_pet = None
-
+achievements = []
+total_time = 0
+streak = 0
+longest_session = 0
+total_sessions = 0
 
 def pomodoro():
-    global coins
     while True: #input validation loop before running the timer and break functions to ensure integer values are passed
         hours = input('Please input hours to focus: ')
         minutes = input('Please input minutes to focus: ')
@@ -43,22 +42,17 @@ def pomodoro():
             else:
                 break
         except ValueError: 
-            print('invalid input, please enter number') 
+            print('Invalid input, please enter number\n') 
 
     print('Starting session. Good luck!')
-    #show pet if unlocked
-    if current_pet: 
-        print(pets.pet_ascii[current_pet])
 
-    earned_coins = timer.countdown(hours, minutes)
+    focused_time = timer.countdown(hours, minutes)
     sound.notification_sound()
-    print(f'Good job! You earned {earned_coins} coins.')
-    coins += earned_coins
-    save_all()
-    print('Break time! Take a moment to reset.')
-    timer.break_timer(break_minutes)
-    sound.notification_sound()
-    while True: #after time and break,
+    print(f'Good job! You focused for {focused_time} minutes.')
+    total_time += focused_time
+    total_sessions += 1
+    longest_session = longest_check(focused_time, longest_session)
+    while True: #check after timer but before break
         task_completion = input('Did you complete any tasks? (y/n)\n')
         if task_completion.lower() == 'y':
             complete_task()
@@ -68,6 +62,15 @@ def pomodoro():
             break
         else:
             print('Invalid input. Please enter y or n.\n')
+    save_all()
+    print('Break time! Take a moment to reset.')
+    timer.break_timer(break_minutes)
+    sound.notification_sound()
+
+def longest_check(focused_time, longest_session):
+    if focused_time > longest_session:
+        return focused_time
+    return longest_session
 
 def add_task():
     task = input('Enter task to add: ')
@@ -117,20 +120,15 @@ def remove_task(): #for removing a task without completing it in the menus
     save_all()
     print('Task removed.')
 
-def complete_task(): #will only be used after a completed pomodoro cycle to reward coins
-    global coins
+def complete_task(): #will only be used after a completed pomodoro cycle
     choice = choose_task('Which task did you complete?\n')
     if choice is None:
         return
     task = tasks.pop(choice)
     completed_tasks.append(task)
-    coins += 5
     save_all()
-    print(f"Task completed: {task}\nGood job! +5 coins\n")
+    print(f"Task completed: {task}\nGood job!\n")
 
-    if current_pet:
-        print('Your pet is proud of you!\n')
-        print(pets.pet_ascii[current_pet])
 
 def get_int(prompt): #input validation for menu number options
     while True:
@@ -144,15 +142,11 @@ def get_int(prompt): #input validation for menu number options
 def menu():
     while True:
         print('=== Menu ===')
-        print(f'You have {coins} coins')
-
-        if current_pet:
-            print(pets.pet_ascii[current_pet])
 
         print('1. Start pomodoro timer')
         print('2. Tasks')
-        print('3. Shop')
-        print('4. Pets')
+        print('3. Stats')
+        print('4. Achievements')
         print('5. Quit')
 
         choice = get_int('Please choose an option:\n')
@@ -160,10 +154,10 @@ def menu():
             pomodoro()
         elif choice == 2:
             tasks_menu()
-        elif choice == 3:
-            shop_menu()
-        elif choice == 4:
-            pets_menu()
+        # elif choice == 3:
+        #     stats_menu()
+        # elif choice == 4:
+        #     achievements_menu()
         elif choice == 5:
             print("Thank you for using my timer, can't wait to see you again!")
             break
@@ -192,72 +186,30 @@ def tasks_menu(): #second layer of menu accessed via original menu
         elif choice == 5:
             break
 
-def shop_menu(): #also accessed via original menu
-    global coins, unlocks
-    while True:
-        print(f'You have {coins} coins')
-        print('1. Cat - 100 coins')
-        print('2. Chick - 100 coins')
-        print('3. Robot - 100 coins')
-        print('4. Rabbit - 100 coins')
-        print('5. Back to main menu')
-        choice = get_int("Please select the item you'd like to buy:\n")
+# def stats_menu():
+#     while True:
 
-        if choice in [1, 2, 3, 4]: #if a valid pet choice, will check if enough coins
-            pet_name = pets.pets[choice]
-            if pet_name in unlocks: #prevents buyingn pet if already owned
-                print('You already own this pet.\n')
-            else:
-                if coins >= 100:
-                    coins -= 100
-                    unlocks.append(pet_name)
-                    print(f'You just bought {pet_name}!\n')
-                    save_all()
-                else:
-                    print("You don't have enough coins.\n")
-        elif choice == 5:
-            break
-        else:
-            print('Invalid choice.\n')
-
-def pets_menu(): 
-    global current_pet
-    if not unlocks:
-        print('You have no pets yet.\n')
-        return
-    while True:
-        if current_pet is not None:
-            print(f'Current pet: \n{pets.pet_ascii[current_pet]}')
-        else:
-            print("Current pet: None\n")
-
-        for i, p in enumerate(unlocks): #prints every pet unlocked so far, along with the ASCII art
-            print(f'{i+1}. {p}\n{pets.pet_ascii[p]}\n')
-        print(f'{len(unlocks)+1}. Back to main menu')
-
-        choice = get_int('Which pet would you like to switch to?\n')
-
-        if choice >= 1 and choice <= len(unlocks): #switch current pet if index is valid
-            current_pet = unlocks[choice - 1]
-            save_all()
-        elif choice == len(unlocks) + 1:
-            break
-        else:
-            print('Invalid choice.\n')
+# def achievements_menu():
+#     while True:
 
 def save_all():
     storage.save_data({
-        "coins" : coins,
         "tasks" : tasks,
         "completed_tasks" : completed_tasks,
-        "unlocks" : unlocks,
-        "current_pet" : current_pet
+        "achievements" : achievements,
+        "total_time" : total_time,
+        "streak" : streak,
+        "longest_session" : longest_session,
+        "total_sessions" : total_sessions
     })
 
 state = storage.load_data()
-coins = state["coins"]
 tasks = state["tasks"]
 completed_tasks = state["completed_tasks"]
-unlocks = state["unlocks"]
-current_pet = state["current_pet"]
+achievements = state["achievements"]
+total_time = state["total_time"]
+streak = state["streak"]
+longest_session = state["longest_session"]
+total_sessions = state["total_sessions"]
+
 menu()

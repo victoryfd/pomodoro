@@ -8,8 +8,7 @@ task tracking and progression systems.
 
 - Pomodoro timer with custom work / break cycles
 - Task list management
-- Coin-based reward system
-- Progression and upgrade mechanics (only pets right now, more planned)
+- Stats and achievement tracking
 
 ## Status
 
@@ -19,5 +18,5 @@ Currently refactoring from a course assignment into a standalone project.
 
 - Refactor codebase and file structure
 - Improve persistence and save system
-- Add more depth in progression and upgrades
-- Explore evolving the project into a companion-style productivity app
+- Add achievements
+- Add stat tracking (total time/sessions, longest session, streaks, etc.)

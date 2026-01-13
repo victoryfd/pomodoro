@@ -5,11 +5,13 @@ root = Path(__file__).parent.parent
 save_file = root / "data" / "save_data.json"
 
 default_data = {
-    "coins" : 0,
     "tasks" : [],
     "completed_tasks" : [],
-    "unlocks" : [],
-    "current_pet" : None
+    "achievements" : [],
+    "total_time" : 0,
+    "streak" : 0,
+    "longest_session" : 0,
+    "total_sessions" : 0
 }
 
 def load_data(): #using try/except, function will continue even if no input file is found
@@ -18,6 +20,7 @@ def load_data(): #using try/except, function will continue even if no input file
             data = json.load(f)
             return {**default_data, **data}
     except (FileNotFoundError, json.JSONDecodeError):
+        print("Save file missing, creating new file.\n")
         return default_data.copy()
 
 def save_data(data): #output file will be created when saving, and can be used as input later
