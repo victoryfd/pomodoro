@@ -1,8 +1,8 @@
-# Pomodoro Game
+# DeepFocus
 
-Gamified pomodoro timer originally built as a class project,
-now being expanded into a more complete productivity game with,
-task tracking and progression systems.
+Pomodoro timer originally built as a class project, now being
+expanded into a more complete productivity game with,
+task tracking, stat tracking, and achievements.
 
 ## Features
 
