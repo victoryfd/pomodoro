@@ -12,7 +12,8 @@ default_data = {
     "streak" : 0,
     "longest_session" : 0,
     "total_sessions" : 0,
-    "focused_days" : 0
+    "focused_days" : 0,
+    "last_focus_date" : None
 }
 
 def load_data(): #using try/except, function will continue even if no input file is found

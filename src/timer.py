@@ -9,7 +9,7 @@ def display_time(hours, minutes, seconds):
 #runs a timer and returns minutes that the user focused for
 def countdown(hours, minutes): 
     total_time = hours * 3600 + minutes * 60
-    ini_total_time = hours * 60 + minutes #for collecting score/coins at the end, 1 coin/minute 
+    ini_total_time = hours * 60 + minutes #for collecting score, total minutes
     while total_time > 0:
         display_hours = total_time // 3600
         display_minutes = total_time % 3600 // 60
